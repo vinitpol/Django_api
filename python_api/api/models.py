@@ -23,7 +23,7 @@ class Project(models.Model):
     project_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.CharField(max_length=100)
-    client_id = models.ForeignKey(Client,on_delete=models.CASCADE)
+    client_id = models.ForeignKey(Client,related_name='projects',on_delete=models.CASCADE)
 
     def __str__(self):
         return self.project_name

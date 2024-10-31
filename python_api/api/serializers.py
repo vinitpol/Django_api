@@ -4,16 +4,17 @@ from .models import Client,Project
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['id', 'name']
-
-    # def get_projects(self, obj):
-    #     # Fetch projects from MySQL project table for this client
-    #     projects = Project.objects.filter(client=obj.id)
-    #     return ProjectSerializer(projects, many=True).data
+        fields = ['id', 'project_name']
 
 class ClientSerializer(serializers.ModelSerializer):
-    projects = ProjectSerializer(many=True,read_only = True)
+    # projects = ProjectSerializer(many=True,read_only = True)
     class Meta:
         model = Client
-        fields = ["id", "client_name",'projects', "created_at", "created_by"]
+        fields = ["id", "client_name", "created_at", "created_by"]
+        read_only_fields = ['created_by']
+
+    def validate_client_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Client name cannot be empty")
+        return value.strip()
 

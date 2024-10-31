@@ -5,7 +5,7 @@ from .serializers import ClientSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-# # Create your views here.
+# Create your views here.
 
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
@@ -27,26 +27,70 @@ class ClientViewSet(viewsets.ModelViewSet):
             print("Validation Errors:", serializer.errors)  
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        def update(self, request, *args, **kwargs):
-            partial = kwargs.pop('partial', False)  # False for PUT, True for PATCH
-            instance = self.get_object()
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)  # False for PUT, True for PATCH
+        instance = self.get_object()
+        
+        # Store old name for logging
+        old_name = instance.client_name
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if serializer.is_valid():
+            # Save the updated instance
+            updated_instance = serializer.save()
             
-            # Store old name for logging
-            old_name = instance.client_name
+            # Log the name change if it was updated
+            if old_name != updated_instance.client_name:
+                print(f"Client name updated from '{old_name}' to '{updated_instance.client_name}' for id {instance.id}")
             
-            serializer = self.get_serializer(instance, data=request.data, partial=partial)
-            if serializer.is_valid():
-                # Save the updated instance
-                updated_instance = serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            print("Validation Errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def update(self, request, *args, **kwargs):
+    #     try:
+    #         # Get the instance
+    #         instance = self.get_object()
+    #         old_name = instance.client_name
+
+    #         # Determine if this is a PATCH or PUT request
+    #         partial = kwargs.pop('partial', False)
+            
+    #         print(f"Updating client {instance.id} with data:", request.data)
+            
+    #         serializer = self.get_serializer(
+    #             instance, 
+    #             data=request.data, 
+    #             partial=partial
+    #         )
+
+    #         if serializer.is_valid():
+    #             updated_instance = serializer.save()
                 
-                # Log the name change if it was updated
-                if old_name != updated_instance.client_name:
-                    print(f"Client name updated from '{old_name}' to '{updated_instance.client_name}' for id {instance.id}")
+    #             # Log the update
+    #             if old_name != updated_instance.client_name:
+    #                 print(f"Client name updated from '{old_name}' to '{updated_instance.client_name}' for id {instance.id}")
                 
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                print("Validation Errors:", serializer.errors)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #             return Response(serializer.data, status=status.HTTP_200_OK)
+    #         else:
+    #             print("Validation Errors:", serializer.errors)
+    #             return Response(
+    #                 {"error": "Invalid data", "details": serializer.errors},
+    #                 status=status.HTTP_400_BAD_REQUEST
+    #             )
+                
+    #     except Client.DoesNotExist:
+    #         return Response(
+    #             {"error": "Client not found"},
+    #             status=status.HTTP_404_NOT_FOUND
+    #         )
+    #     except Exception as e:
+    #         print(f"Error updating client: {str(e)}")
+    #         return Response(
+    #             {"error": "Unable to update client"},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
         
         
 
