@@ -1,10 +1,13 @@
 from django.contrib import admin
 from django.urls import path,include
-from api.views import ClientViewSet
+from api.views import ClientViewSet,ProjectViewSet,ProjectListCreateView
 from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'client',ClientViewSet)
+router.register(r'projects', ProjectViewSet,basename='projects')
+router.register(r'clients/(?P<client_id>[^/.]+)/projects', ProjectViewSet, basename='client-projects')
+
 
 urlpatterns = [
     path('',include(router.urls)),
@@ -18,5 +21,6 @@ urlpatterns = [
         'get': 'list',
         'post': 'create'
     })),
+    path('api/v1/project/', ProjectListCreateView.as_view(), name='project-list-create'),
 
 ]
